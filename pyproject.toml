@@ -10,7 +10,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "3.9.16"
 ata-db-models = "0.0.15"
-fastapi = "0.93.0"
+fastapi = "^0.93.0"
+mangum = "^0.17.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.961"
