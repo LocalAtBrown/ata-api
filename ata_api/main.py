@@ -13,10 +13,12 @@ def get_root():
     return {"message": "This is the root endpoint for the AtA API."}
 
 
-@app.get("/prescription/{user_id}", response_model=list[Prescription])
-def read_prescription(user_id: str):
+@app.get("/prescription/{site_name}/{user_id}", response_model=list[Prescription])
+def read_prescription(site_name: str, user_id: str):
     with Session(engine) as session:
-        prescription = session.exec(select(Prescription).where(Prescription.user_id == user_id)).first()
+        prescription = session.exec(
+            select(Prescription).where(Prescription.user_id == user_id, Prescription.site_name == site_name)
+        ).first()
         return prescription
 
 
