@@ -14,9 +14,10 @@ API to serve AtA prescriptions.
 
 ## Usage
 
-TODO: Describe how to use your project!
-TODO: Do you need an installation, contributing, community, documentation, or other section here?
-Depends on the project, make sure to add it if it makes sense to do so.
+In production, this is deployed via CD on AWS.
+
+To run it locally from the `ata_api` directory, run: `uvicorn main:app --reload`. This will run the API on
+`localhost:8000`. You can confirm it is up by pinging the root: `curl localhost:8000/` should return a simple message.
 
 ## Development
 

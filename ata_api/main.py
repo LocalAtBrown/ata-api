@@ -17,7 +17,7 @@ def get_root():
     return {"message": "This is the root endpoint for the AtA API."}
 
 
-@app.get("/prescription/{site_name}/{user_id}", response_model=list[Prescription])
+@app.get("/prescription/{site_name}/{user_id}", response_model=int)
 def read_prescription(site_name: str, user_id: str) -> int:
     if STRATEGY == "RCT":
         return fair_coin_toss()
