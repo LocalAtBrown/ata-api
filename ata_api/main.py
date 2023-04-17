@@ -13,7 +13,7 @@ STRATEGY = getenv("STRATEGY", "RCT")
 
 
 @app.get("/")
-def get_root():
+def get_root() -> object:
     return {"message": "This is the root endpoint for the AtA API."}
 
 
@@ -39,7 +39,9 @@ def get_prescription_from_db(site_name: str, user_id: str) -> int:
         prescription = session.exec(
             select(Prescription).where(Prescription.user_id == user_id, Prescription.site_name == site_name)
         ).first()
-        return int(prescription.prescribe)
+        if prescription:
+            return int(prescription.prescribe)
+        return 0
 
 
 handler = Mangum(app)

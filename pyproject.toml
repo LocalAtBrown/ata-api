@@ -48,3 +48,8 @@ files = "."
 exclude = [
     '\.venv',
 ]
+
+[[tool.mypy.overrides]]
+# Remove any of these packages from below list once its type stubs are available
+module = ["ata_db_models.helpers", "ata_db_models.models"]
+ignore_missing_imports = true
