@@ -29,6 +29,11 @@ def fair_coin_toss() -> int:
     return randint(0, 1)
 
 
+def ignore_existing_subscribers() -> bool:
+    # todo
+    ...
+
+
 def get_prescription_from_db(site_name: str, user_id: str) -> int:
     with Session(engine) as session:
         prescription = session.exec(
