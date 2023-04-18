@@ -9,7 +9,7 @@ from sqlmodel import Session, create_engine, select
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())
-STRATEGY = getenv("STRATEGY", "RCT")
+POLICY = getenv("POLICY", "RCT")
 
 
 @app.get("/")
@@ -19,7 +19,7 @@ def get_root() -> object:
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=int)
 def read_prescription(site_name: str, user_id: str) -> int:
-    if STRATEGY == "RCT":
+    if POLICY == "RCT":
         return fair_coin_toss()
     else:
         return get_prescription_from_db(site_name=site_name, user_id=user_id)
