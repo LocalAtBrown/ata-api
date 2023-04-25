@@ -1,15 +1,13 @@
-from os import getenv
 from uuid import UUID
 
 from ata_db_models.helpers import get_conn_string
-from ata_db_models.models import Group, Prescription, UserGroup
+from ata_db_models.models import Group, UserGroup
 from fastapi import FastAPI
 from mangum import Mangum
 from sqlmodel import Session, create_engine, select
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())
-POLICY = getenv("POLICY", "RCT")
 
 
 @app.get("/")
@@ -49,16 +47,6 @@ def read_prescription(site_name: str, user_id: str) -> int:
         else:
             # shouldn't get here, safe default of 0
             return 0
-
-
-def get_prescription_from_db(site_name: str, user_id: str) -> int:
-    with Session(engine) as session:
-        prescription = session.exec(
-            select(Prescription).where(Prescription.user_id == user_id, Prescription.site_name == site_name)
-        ).first()
-        if prescription:
-            return int(prescription.prescribe)
-        return 0
 
 
 handler = Mangum(app)
