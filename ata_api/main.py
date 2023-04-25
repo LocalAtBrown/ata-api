@@ -19,6 +19,12 @@ def get_root() -> object:
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=int)
 def read_prescription(site_name: str, user_id: str) -> int:
+    # query db for user/site group
+    # if no row for the user/site, create it
+    # based on the group, return the prescription
+    # A: original (so... 1?)
+    # B: run scroll depth calc
+    # C: no show (0)
     if POLICY == "RCT":
         return fair_coin_toss()
     else:
