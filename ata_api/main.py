@@ -63,8 +63,9 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
             scroll_depth = session.execute(statement).first()
 
             try:
-                if scroll_depth[0] > 0.3:
-                    PrescriptionResponse(group=Group.B, value=1)
+                # change this 0.3 for a different scroll depth threshold
+                if scroll_depth[0] > 0.3:  # type: ignore
+                    return PrescriptionResponse(group=Group.B, value=1)
                 else:
                     return PrescriptionResponse(group=Group.B, value=0)
             except TypeError:
