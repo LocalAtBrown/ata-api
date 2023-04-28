@@ -1,8 +1,8 @@
 from uuid import UUID
 
 from ata_db_models.helpers import get_conn_string
-from ata_db_models.models import Group, UserGroup
-from fastapi import FastAPI
+from ata_db_models.models import Group, UserGroup, Event
+from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from sqlmodel import Session, create_engine, select, text
@@ -23,14 +23,27 @@ def get_root() -> object:
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
 def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
+    # Verify if user_id is a valid UUID string of 32 hexadecimal digits
+    try:
+        user_id = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Invalid user ID: {user_id}")
+
     with Session(engine) as session:
+        # test if site exists
+        statement = text(f"""select site_name from event where site_name = '{site_name}' limit 1""")
+        exist_site_name = session.execute(statement).first()
+        # if site does not exist, raise exception
+        if exist_site_name is None:
+            raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}")
+
         # query db for user/site group
         usergroup = session.exec(
             select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.site_name == site_name)
         ).first()
         # if no row for the user/site, create it
         if not usergroup:
-            usergroup = UserGroup(user_id=UUID(user_id), site_name=site_name)
+            usergroup = UserGroup(user_id=user_id, site_name=site_name)
             session.add(usergroup)
             session.commit()
 
@@ -77,6 +90,20 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
         else:
             # shouldn't get here, safe default of 0
             return PrescriptionResponse(group=Group.C, value=0)
+
+
+@app.get("/prescription/{site_name}")
+def read_only_site(site_name: str) -> None:
+    with Session(engine) as session:
+        # test if site exists
+        statement = text(f"""select site_name from event where site_name = '{site_name}' limit 1""")
+        exist_site_name = session.execute(statement).first()
+        if exist_site_name is None:
+            # if site does not exist, raise invalid site exception.
+            raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
+        else:
+            # if site exists, raise specify a user ID
+            raise HTTPException(status_code=404, detail=f"Please, specify a user ID")
 
 
 handler = Mangum(app)
