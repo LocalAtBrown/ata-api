@@ -51,5 +51,5 @@ exclude = [
 
 [[tool.mypy.overrides]]
 # Remove any of these packages from below list once its type stubs are available
-module = ["ata_db_models.helpers", "ata_db_models.models"]
+module = ["ata_db_models.helpers", "ata_db_models.models", "helpers.enums"]
 ignore_missing_imports = true
