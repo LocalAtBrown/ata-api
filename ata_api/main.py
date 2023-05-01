@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from sqlmodel import Session, create_engine, select, text
+from helpers.enums import Site
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())
@@ -29,23 +30,23 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
     except ValueError:
         raise HTTPException(status_code=404, detail=f"Invalid user ID: {user_id}")
 
-    with Session(engine) as session:
-        # test if site exists
-        statement = text(f"""select site_name from event where site_name = '{site_name}' limit 1""")
-        exist_site_name = session.execute(statement).first()
-        # if site does not exist, raise exception
-        if exist_site_name is None:
-            raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}")
+    # test if site exists
+    if site_name not in [*Site]:
+        raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}")
 
+    with Session(engine) as session:
         # query db for user/site group
         usergroup = session.exec(
             select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
         ).first()
         # if no row for the user/site, create it
         if not usergroup:
-            usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
-            session.add(usergroup)
-            session.commit()
+            try:
+                usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
+                session.add(usergroup)
+                session.commit()
+            except:
+                raise HTTPException(status_code=404, detail="There was a problem with the database")
 
         if usergroup.group == Group.A:
             # show CTA
@@ -94,16 +95,13 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
 
 @app.get("/prescription/{site_name}")
 def read_only_site(site_name: str) -> None:
-    with Session(engine) as session:
-        # test if site exists
-        statement = text(f"""select site_name from event where site_name = '{site_name}' limit 1""")
-        exist_site_name = session.execute(statement).first()
-        if exist_site_name is None:
-            # if site does not exist, raise invalid site exception.
-            raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
-        else:
-            # if site exists, raise specify a user ID
-            raise HTTPException(status_code=404, detail=f"Please, specify a user ID")
+    # test if site exists
+    if site_name not in [*Site]:
+        # if it doesn't
+        raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
+    else:
+        # if site exists, request a user ID
+        raise HTTPException(status_code=404, detail=f"Please, specify a user ID")
 
 
 handler = Mangum(app)
