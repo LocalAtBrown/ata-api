@@ -25,7 +25,7 @@ def get_root() -> object:
 def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
     # Verify if user_id is a valid UUID string of 32 hexadecimal digits
     try:
-        user_id = UUID(user_id)
+        user_id_uuid = UUID(user_id)
     except ValueError:
         raise HTTPException(status_code=404, detail=f"Invalid user ID: {user_id}")
 
@@ -39,11 +39,11 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
 
         # query db for user/site group
         usergroup = session.exec(
-            select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.site_name == site_name)
+            select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
         ).first()
         # if no row for the user/site, create it
         if not usergroup:
-            usergroup = UserGroup(user_id=user_id, site_name=site_name)
+            usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
             session.add(usergroup)
             session.commit()
 
@@ -66,7 +66,7 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
                          as relative_vmax
                           FROM event AS ev
                           WHERE ev.doc_height > 0
-                            AND ev.domain_userid = '{user_id}'
+                            AND ev.domain_userid = '{user_id_uuid}'
                             AND ev.site_name = '{site_name}'
                           GROUP BY domain_sessionidx, page_urlpath)
             SELECT avg(relative_vmax) AS avg_relative_vmax
