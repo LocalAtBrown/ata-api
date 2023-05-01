@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from sqlmodel import Session, create_engine, select, text
-from helpers.enums import Site
+from ata_api.helpers.enums import Site
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())

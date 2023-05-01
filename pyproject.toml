@@ -12,6 +12,7 @@ python = "3.9.16"
 ata-db-models = "0.0.16"
 fastapi = "^0.93.0"
 mangum = "^0.17.0"
+httpx = "^0.24.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.961"
