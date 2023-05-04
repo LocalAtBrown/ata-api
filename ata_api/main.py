@@ -2,10 +2,15 @@ from uuid import UUID
 
 from ata_db_models.helpers import get_conn_string
 from ata_db_models.models import Group, UserGroup
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from sqlmodel import Session, create_engine, select, text
+
+from ata_api.helpers.enums import SiteName
+from ata_api.helpers.logging import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())
@@ -22,23 +27,43 @@ def get_root() -> object:
 
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
-def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
+def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
+    # Verify if user_id is a valid UUID string of 32 hexadecimal digits
+    try:
+        user_id_uuid = UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Invalid user ID: {user_id}")
+
+    # test if site exists
+    if site_name not in [*SiteName]:
+        raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}")
+
     with Session(engine) as session:
         # query db for user/site group
-        usergroup = session.exec(
-            select(UserGroup).where(UserGroup.user_id == user_id, UserGroup.site_name == site_name)
-        ).first()
+        try:
+            usergroup = session.exec(
+                select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
+            ).first()
+        except Exception as e:
+            logger.exception(f"Site: {site_name}, user ID: {user_id}: {e}")
+            raise HTTPException(status_code=404, detail="There was a problem with the database")
+
         # if no row for the user/site, create it
         if not usergroup:
-            usergroup = UserGroup(user_id=UUID(user_id), site_name=site_name)
-            session.add(usergroup)
-            session.commit()
+            try:
+                usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
+                session.add(usergroup)
+                session.commit()
+            except Exception as e:
+                logger.exception(f"Site: {site_name}, user ID: {user_id}: {e}")
+                raise HTTPException(status_code=404, detail="There was a problem with the database")
 
         if usergroup.group == Group.A:
             # show CTA
             return PrescriptionResponse(group=Group.A, value=1)
         elif usergroup.group == Group.B:
             # model
+            # TODO: delete this if decide to use plugin to calculate scroll depth
             statement = text(
                 f"""
             WITH prep AS (SELECT LEAST(
@@ -53,7 +78,7 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
                          as relative_vmax
                           FROM event AS ev
                           WHERE ev.doc_height > 0
-                            AND ev.domain_userid = '{user_id}'
+                            AND ev.domain_userid = '{user_id_uuid}'
                             AND ev.site_name = '{site_name}'
                           GROUP BY domain_sessionidx, page_urlpath)
             SELECT avg(relative_vmax) AS avg_relative_vmax
@@ -77,6 +102,22 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
         else:
             # shouldn't get here, safe default of 0
             return PrescriptionResponse(group=Group.C, value=0)
+
+
+@app.get("/prescription/{site_name}")
+def get_prescription_invalid_params(site_name: str) -> None:
+    # test if site exists
+    if site_name not in [*SiteName]:
+        # if it doesn't
+        raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
+    else:
+        # if site exists, request a user ID
+        raise HTTPException(status_code=404, detail="Please, specify a user ID")
+
+
+@app.get("/prescription/")
+def get_prescription_no_params() -> None:
+    raise HTTPException(status_code=404, detail="Please specify a site and a user ID")
 
 
 handler = Mangum(app)
