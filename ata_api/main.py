@@ -23,7 +23,7 @@ def get_root() -> object:
 
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
-def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
+def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
     # Verify if user_id is a valid UUID string of 32 hexadecimal digits
     try:
         user_id_uuid = UUID(user_id)
@@ -94,7 +94,7 @@ def read_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
 
 
 @app.get("/prescription/{site_name}")
-def read_only_site(site_name: str) -> None:
+def get_prescription_invalid_params(site_name: str) -> None:
     # test if site exists
     if site_name not in [*Site]:
         # if it doesn't
@@ -105,7 +105,7 @@ def read_only_site(site_name: str) -> None:
 
 
 @app.get("/prescription/")
-def only_prescription() -> None:
+def get_prescription_no_params() -> None:
     raise HTTPException(status_code=404, detail=f"Please specify a site and a user ID")
 
 
