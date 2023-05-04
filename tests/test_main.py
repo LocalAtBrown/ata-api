@@ -35,3 +35,11 @@ def test_invalid_user_and_site() -> None:
     assert response.json() == {
         "detail": "Invalid site: dummysite",
     }
+
+
+def test_only_prescription() -> None:
+    response = client.get("/prescription/")
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Please specify a site and a user ID",
+    }

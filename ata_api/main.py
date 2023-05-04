@@ -104,4 +104,9 @@ def read_only_site(site_name: str) -> None:
         raise HTTPException(status_code=404, detail=f"Please, specify a user ID")
 
 
+@app.get("/prescription/")
+def only_prescription() -> None:
+    raise HTTPException(status_code=404, detail=f"Please specify a site and a user ID")
+
+
 handler = Mangum(app)
