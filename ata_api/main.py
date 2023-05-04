@@ -1,12 +1,16 @@
 from uuid import UUID
 
 from ata_db_models.helpers import get_conn_string
-from ata_db_models.models import Group, UserGroup, Event
+from ata_db_models.models import Group, UserGroup
 from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from sqlmodel import Session, create_engine, select, text
-from ata_api.helpers.enums import Site
+
+from ata_api.helpers.enums import SiteName
+from ata_api.helpers.logging import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 engine = create_engine(url=get_conn_string())
@@ -31,21 +35,27 @@ def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
         raise HTTPException(status_code=404, detail=f"Invalid user ID: {user_id}")
 
     # test if site exists
-    if site_name not in [*Site]:
+    if site_name not in [*SiteName]:
         raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}")
 
     with Session(engine) as session:
         # query db for user/site group
-        usergroup = session.exec(
-            select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
-        ).first()
+        try:
+            usergroup = session.exec(
+                select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
+            ).first()
+        except Exception as e:
+            logger.exception(f"Site: {site_name}, user ID: {user_id}: {e}")
+            raise HTTPException(status_code=404, detail="There was a problem with the database")
+
         # if no row for the user/site, create it
         if not usergroup:
             try:
                 usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
                 session.add(usergroup)
                 session.commit()
-            except:
+            except Exception as e:
+                logger.exception(f"Site: {site_name}, user ID: {user_id}: {e}")
                 raise HTTPException(status_code=404, detail="There was a problem with the database")
 
         if usergroup.group == Group.A:
@@ -96,17 +106,17 @@ def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
 @app.get("/prescription/{site_name}")
 def get_prescription_invalid_params(site_name: str) -> None:
     # test if site exists
-    if site_name not in [*Site]:
+    if site_name not in [*SiteName]:
         # if it doesn't
         raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
     else:
         # if site exists, request a user ID
-        raise HTTPException(status_code=404, detail=f"Please, specify a user ID")
+        raise HTTPException(status_code=404, detail="Please, specify a user ID")
 
 
 @app.get("/prescription/")
 def get_prescription_no_params() -> None:
-    raise HTTPException(status_code=404, detail=f"Please specify a site and a user ID")
+    raise HTTPException(status_code=404, detail="Please specify a site and a user ID")
 
 
 handler = Mangum(app)
