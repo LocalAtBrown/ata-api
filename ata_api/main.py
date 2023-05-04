@@ -63,6 +63,7 @@ def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
             return PrescriptionResponse(group=Group.A, value=1)
         elif usergroup.group == Group.B:
             # model
+            # TODO: delete this if decide to use plugin to calculate scroll depth
             statement = text(
                 f"""
             WITH prep AS (SELECT LEAST(
