@@ -104,20 +104,4 @@ def get_prescription(site_name: str, user_id: str) -> PrescriptionResponse:
             return PrescriptionResponse(group=Group.C, value=0)
 
 
-@app.get("/prescription/{site_name}")
-def get_prescription_invalid_params(site_name: str) -> None:
-    # test if site exists
-    if site_name not in [*SiteName]:
-        # if it doesn't
-        raise HTTPException(status_code=404, detail=f"Invalid site: {site_name}. You also need to specify a user ID")
-    else:
-        # if site exists, request a user ID
-        raise HTTPException(status_code=404, detail="Please, specify a user ID")
-
-
-@app.get("/prescription/")
-def get_prescription_no_params() -> None:
-    raise HTTPException(status_code=404, detail="Please specify a site and a user ID")
-
-
 handler = Mangum(app)
