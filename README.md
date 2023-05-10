@@ -59,3 +59,10 @@ To update dependencies in your local environment, make changes to the `pyproject
 
 To manually run rests, simply run `pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
 to see more options.
+
+Integration tests (run via `pytest -m integration` or `pytest tests`, which runs all tests) require a mock database to be set up locally. Provided you've already installed Docker, in a separate terminal:
+
+```bash
+docker pull postgres
+docker run --rm --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:5432:5432/tcp postgres
+```
