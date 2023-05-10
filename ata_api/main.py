@@ -57,7 +57,7 @@ def get_or_create_prescription(
 
     # query db for user/site group
     try:
-        usergroup = session.execute(
+        query_results = session.execute(
             select(UserGroup).where(UserGroup.user_id == user_id_uuid, UserGroup.site_name == site_name)
         ).first()
     except Exception as e:
@@ -66,8 +66,8 @@ def get_or_create_prescription(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was a problem with the database"
         )
 
-    # if no row for the user/site, create it
-    if not usergroup:
+    # if no row for the user/site, create it, else grab the first row since session.execute().first() still returns a list
+    if query_results is None:
         try:
             usergroup = UserGroup(user_id=user_id_uuid, site_name=site_name)
             session.add(usergroup)
@@ -77,8 +77,10 @@ def get_or_create_prescription(
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was a problem with the database"
             )
+    else:
+        usergroup = query_results[0]
 
-    return PrescriptionResponse(site_name=site_name, user_id=user_id, group=usergroup.group)
+    return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
 
 handler = Mangum(app)

@@ -2,14 +2,14 @@ from typing import Generator, Tuple
 from uuid import UUID
 
 import pytest
-from ata_db_models.models import Group, SQLModel
+from ata_db_models.models import Group, SQLModel, UserGroup
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy import func
 from sqlmodel import select
 
 from ata_api.helpers.enums import SiteName
-from ata_api.main import UserGroup, app, engine, session_factory
+from ata_api.main import app, engine, session_factory
 
 client = TestClient(app)
 
@@ -63,7 +63,6 @@ class TestPrescription:
         If a valid user (valid ID & site name) doesn't already exist, they
         should be created.
         """
-        # with create_and_drop_tables(engine):
         response = client.get(f"/prescription/{'/'.join(user)}")
         assert response.status_code == status.HTTP_200_OK
 
@@ -84,4 +83,23 @@ class TestPrescription:
         If a valid user (valid ID & site name) already exists, they should
         simply be returned.
         """
-        pass
+        # First, write user to DB
+        with session_factory() as session:
+            usergroup = UserGroup(site_name=user[0], user_id=user[1])
+            session.add(usergroup)
+            session.commit()
+
+        # Check that user is written
+        with session:
+            count = session.execute(select(func.count()).select_from(select(UserGroup).subquery())).scalar_one()
+            assert count == 1
+
+        # Make endpoint call
+        response = client.get(f"/prescription/{'/'.join(user)}")
+        assert response.status_code == status.HTTP_200_OK
+
+        # Check returned data is of the right user
+        data = response.json()
+        assert data["site_name"] == user[0]
+        assert UUID(data["user_id"]) == UUID(user[1])
+        assert data["group"] in {*Group}  # A, B or C
