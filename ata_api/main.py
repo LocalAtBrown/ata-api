@@ -1,3 +1,4 @@
+from typing import Generator
 from uuid import UUID
 
 from ata_db_models.helpers import get_conn_string
@@ -18,7 +19,7 @@ engine = create_engine(url=get_conn_string())
 session_factory = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 
-def create_db_session():
+def create_db_session() -> Generator[Session, None, None]:
     """
     FastAPI dependency that opens and closes a DB session.
     (See: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/.)

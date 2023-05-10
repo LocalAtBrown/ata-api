@@ -5,8 +5,6 @@ import pytest
 from ata_db_models.models import Group, SQLModel, UserGroup
 from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy import func
-from sqlmodel import select
 
 from ata_api.helpers.enums import SiteName
 from ata_api.main import app, engine, session_factory
@@ -42,7 +40,7 @@ class TestPrescription:
         return (SiteName.AFRO_LA, "3800ac11781a4cf2a6759bbaa9c0729b")
 
     @pytest.mark.unit
-    def test_invalid_user_id(self, user) -> None:
+    def test_invalid_user_id(self, user: Tuple[str, str]) -> None:
         response = client.get(f"/prescription/{user[0]}/dummyuser")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json() == {
@@ -50,7 +48,7 @@ class TestPrescription:
         }
 
     @pytest.mark.unit
-    def test_invalid_site_name(self, user) -> None:
+    def test_invalid_site_name(self, user: Tuple[str, str]) -> None:
         response = client.get(f"/prescription/dummysite/{user[1]}")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json() == {
@@ -58,7 +56,7 @@ class TestPrescription:
         }
 
     @pytest.mark.integration
-    def test_user_missing(self, create_and_drop_tables, user) -> None:
+    def test_user_missing(self, create_and_drop_tables: Generator[None, None, None], user: Tuple[str, str]) -> None:
         """
         If a valid user (valid ID & site name) doesn't already exist, they
         should be created.
@@ -74,11 +72,11 @@ class TestPrescription:
 
         # Check user is written to table
         with session_factory() as session:
-            count = session.execute(select(func.count()).select_from(select(UserGroup).subquery())).scalar_one()
+            count = session.query(UserGroup).count()
             assert count == 1
 
     @pytest.mark.integration
-    def test_user_exists(self, create_and_drop_tables, user) -> None:
+    def test_user_exists(self, create_and_drop_tables: Generator[None, None, None], user: Tuple[str, str]) -> None:
         """
         If a valid user (valid ID & site name) already exists, they should
         simply be returned.
@@ -91,7 +89,7 @@ class TestPrescription:
 
         # Check that user is written
         with session:
-            count = session.execute(select(func.count()).select_from(select(UserGroup).subquery())).scalar_one()
+            count = session.query(UserGroup).count()
             assert count == 1
 
         # Make endpoint call
