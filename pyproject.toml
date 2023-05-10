@@ -58,3 +58,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "ata_api.helpers.logging"
 implicit_reexport = true
+
+[tool.pytest.ini_options]
+markers = ["unit", "integration"]
+testpaths = ["tests"]
