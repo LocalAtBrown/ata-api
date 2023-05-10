@@ -58,7 +58,11 @@ class TestPrescription:
         }
 
     @pytest.mark.integration
-    def test_user_not_exist(self, create_and_drop_tables, user) -> None:
+    def test_user_missing(self, create_and_drop_tables, user) -> None:
+        """
+        If a valid user (valid ID & site name) doesn't already exist, they
+        should be created.
+        """
         # with create_and_drop_tables(engine):
         response = client.get(f"/prescription/{'/'.join(user)}")
         assert response.status_code == status.HTTP_200_OK
@@ -69,7 +73,15 @@ class TestPrescription:
         assert UUID(data["user_id"]) == UUID(user[1])
         assert data["group"] in {*Group}  # A, B or C
 
-        # Check data is written to DB
+        # Check user is written to table
         with session_factory() as session:
             count = session.execute(select(func.count()).select_from(select(UserGroup).subquery())).scalar_one()
             assert count == 1
+
+    @pytest.mark.integration
+    def test_user_exists(self, create_and_drop_tables, user) -> None:
+        """
+        If a valid user (valid ID & site name) already exists, they should
+        simply be returned.
+        """
+        pass

@@ -19,6 +19,10 @@ session_factory = sessionmaker(autoflush=False, autocommit=False, bind=engine)
 
 
 def create_db_session():
+    """
+    FastAPI dependency that opens and closes a DB session.
+    (See: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/.)
+    """
     session = session_factory()
     try:
         yield session
