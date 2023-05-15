@@ -1,0 +1,35 @@
+---
+settings:
+  env:
+    API_KEY:
+    PATH_CSV_LOAD:
+
+execution:
+  - concurrency: 4
+    hold-for: 10s
+    iterations: 1
+    ramp-up: 3s
+    scenario: Load
+
+scenarios:
+  Load:
+    data-sources:
+      - delimiter: ","
+        loop: true
+        path: ${PATH_CSV_LOAD}
+        quoted: false
+        variable-names: path
+    headers:
+      x-api-key: ${API_KEY}
+    requests:
+      - follow-redirects: true
+        label: HTTP Request
+        method: GET
+        url: https://ata-api.localnewslab.io/prescription/${path}
+    store-cache: false
+    store-cookie: false
+    use-dns-cache-mgr: false
+
+reporting:
+  - module: final-stats
+  - module: console

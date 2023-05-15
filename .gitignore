@@ -169,5 +169,7 @@ cython_debug/
 # Scratch dir
 scratch/
 
-# Test dummy paths
-tests/load/*.csv
+# Test paths
+tests/performance/*.csv
+tests/performance/*.jmx
+tests/performance/output/

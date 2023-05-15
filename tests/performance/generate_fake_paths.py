@@ -37,7 +37,7 @@ def main(afro_la: int, dallas_free_press: int, open_vallejo: int, the_19th: int)
     assert paths.nunique() == len(paths)
 
     paths.to_csv(
-        f"{Path(__file__).parent}/paths_{afro_la}_{dallas_free_press}_{open_vallejo}_{the_19th}.csv", index=False
+        f"{Path(__file__).parent}/paths_{afro_la}_{dallas_free_press}_{open_vallejo}_{the_19th}.csv", index=False, header=False
     )
 
 
