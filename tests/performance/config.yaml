@@ -5,10 +5,10 @@ settings:
     PATH_CSV_LOAD:
 
 execution:
-  - concurrency: 4
-    hold-for: 10s
-    iterations: 1
-    ramp-up: 3s
+  - concurrency: 250
+    hold-for: 10m
+    iterations: 100000 # very high to replace "loop: forever"
+    ramp-up: 10m
     scenario: Load
 
 scenarios:
