@@ -166,4 +166,8 @@ cython_debug/
 # VSCode
 .vscode/
 
+# Scratch dir
+scratch/
+
+# Test dummy paths
 tests/load/*.csv
