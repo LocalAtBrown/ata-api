@@ -12,7 +12,7 @@ execution:
     throughput: 0.41667 # 125 requests per 300 secs
     ramp-up: 5m
     scenario: Load
-  - concurrency: 6700 # 80k users in 60 minuets
+  - concurrency: 6700 # 80k users in 60 minutes
     hold-for: 5m
     iterations: 100000
     throughput: 22.333
