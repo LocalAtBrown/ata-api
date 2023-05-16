@@ -3,13 +3,22 @@ settings:
   env:
     API_KEY:
     PATH_CSV_LOAD:
+    PATH_CSV_STRESS:
 
 execution:
-  - concurrency: 250
-    hold-for: 10m
+  - concurrency: 125
+    hold-for: 5m
     iterations: 100000 # very high to replace "loop: forever"
-    ramp-up: 10m
+    throughput: 0.41667 # 125 requests per 300 secs
+    ramp-up: 5m
     scenario: Load
+  - concurrency: 6700 # 80k users in 60 minuets
+    hold-for: 5m
+    iterations: 100000
+    throughput: 22.333
+    delay: 10m # wait for Load scenario to finish
+    ramp-up: 30s
+    scenario: Stress
 
 scenarios:
   Load:
@@ -17,6 +26,23 @@ scenarios:
       - delimiter: ","
         loop: true
         path: ${PATH_CSV_LOAD}
+        quoted: false
+        variable-names: path
+    headers:
+      x-api-key: ${API_KEY}
+    requests:
+      - follow-redirects: true
+        label: HTTP Request
+        method: GET
+        url: https://ata-api.localnewslab.io/prescription/${path}
+    store-cache: false
+    store-cookie: false
+    use-dns-cache-mgr: false
+  Stress:
+    data-sources:
+      - delimiter: ","
+        loop: true
+        path: ${PATH_CSV_STRESS}
         quoted: false
         variable-names: path
     headers:
