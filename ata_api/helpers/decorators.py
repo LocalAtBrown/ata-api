@@ -1,7 +1,8 @@
-from fastapi import HTTPException
 import functools
-from typing import TypeVar, Callable
+from typing import Callable, TypeVar
+
 from typing_extensions import ParamSpec
+
 from ata_api.helpers.logging import logging
 
 logger = logging.getLogger(__name__)
@@ -9,11 +10,13 @@ logger = logging.getLogger(__name__)
 P = ParamSpec("P")
 R = TypeVar("R")
 
+
 def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Accepts an Exception as an argument and wraps around a function.
     When the function short-circuits, the exception is raised.
     """
+
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
@@ -22,6 +25,7 @@ def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable
             except Exception as exception_internal:
                 logger.exception(f"{args}, {kwargs}: {exception_internal}")
                 raise exception
-        return wrapper
-    return decorator
 
+        return wrapper
+
+    return decorator
