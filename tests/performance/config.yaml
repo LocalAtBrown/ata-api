@@ -34,7 +34,7 @@ scenarios:
       - follow-redirects: true
         label: HTTP Request
         method: GET
-        url: https://ata-api.localnewslab.io/prescription/${path}
+        url: https://ata-api.localnewslab.io/prescription/${path} # If the schema changes in the future, this will need to be updated
     store-cache: false
     store-cookie: false
     use-dns-cache-mgr: false
@@ -51,7 +51,7 @@ scenarios:
       - follow-redirects: true
         label: HTTP Request
         method: GET
-        url: https://ata-api.localnewslab.io/prescription/${path}
+        url: https://ata-api.localnewslab.io/prescription/${path} # If the schema changes in the future, this will need to be updated
     store-cache: false
     store-cookie: false
     use-dns-cache-mgr: false
