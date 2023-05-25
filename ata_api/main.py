@@ -1,42 +1,21 @@
 import random
-from typing import Annotated, Generator
+from typing import Annotated
 from uuid import UUID
 
-from ata_db_models.helpers import get_conn_string
 from ata_db_models.models import Group
 from fastapi import Depends, FastAPI, Path, Query
 from mangum import Mangum
-from pydantic import BaseModel
-from sqlalchemy.orm import Session, sessionmaker
-from sqlmodel import create_engine
+from sqlalchemy.orm import Session
 
 from ata_api.crud import create_prescription, get_prescription
+from ata_api.db import create_db_session
 from ata_api.helpers.enums import SiteName
 from ata_api.helpers.logging import logging
+from ata_api.models import PrescriptionResponse
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-engine = create_engine(url=get_conn_string())
-session_factory = sessionmaker(autoflush=False, autocommit=False, bind=engine)
-
-
-def create_db_session() -> Generator[Session, None, None]:
-    """
-    FastAPI dependency that opens and closes a DB session.
-    (See: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/.)
-    """
-    session = session_factory()
-    try:
-        yield session
-    finally:
-        session.close()
-
-
-class PrescriptionResponse(BaseModel):
-    site_name: SiteName
-    user_id: UUID
-    group: Group
 
 
 @app.get("/")
