@@ -6,8 +6,9 @@ from ata_db_models.models import Group, SQLModel, UserGroup
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from ata_api.db import engine, session_factory
 from ata_api.helpers.enums import SiteName
-from ata_api.main import app, engine, session_factory
+from ata_api.main import app
 
 client = TestClient(app)
 
@@ -42,18 +43,14 @@ class TestPrescription:
     @pytest.mark.unit
     def test_invalid_user_id(self, user: Tuple[str, str]) -> None:
         response = client.get(f"/prescription/{user[0]}/dummyuser")
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json() == {
-            "detail": "Invalid user ID: dummyuser",
-        }
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "value is not a valid uuid" in response.json()["detail"][0]["msg"]
 
     @pytest.mark.unit
     def test_invalid_site_name(self, user: Tuple[str, str]) -> None:
         response = client.get(f"/prescription/dummysite/{user[1]}")
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json() == {
-            "detail": "Invalid site: dummysite",
-        }
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert "value is not a valid enumeration member" in response.json()["detail"][0]["msg"]
 
     @pytest.mark.integration
     def test_user_missing(self, create_and_drop_tables: Generator[None, None, None], user: Tuple[str, str]) -> None:
@@ -83,7 +80,7 @@ class TestPrescription:
         """
         # First, write user to DB
         with session_factory() as session:
-            usergroup = UserGroup(site_name=user[0], user_id=user[1])
+            usergroup = UserGroup(site_name=user[0], user_id=user[1], group=Group.A)
             session.add(usergroup)
             session.commit()
 
