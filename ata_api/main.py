@@ -32,11 +32,15 @@ def get_or_create_prescription(
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
-    # TODO: This would be a good place to perform a canary-style ramp-up. After ascertaining that the user
-    # is in indeed new, we could assign them to a group with a low probability of being selected for the
-    # intervention, i.e., the code below. This probability could be increased over time.
-    usergroup = get_prescription(session, site_name, user_id) or create_prescription(
-        session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
+    usergroup = (
+        get_prescription(session, site_name, user_id)
+        or  # noqa: W504
+        # TODO: This would be a good place to perform a canary-style ramp-up. After ascertaining that the user
+        # is in indeed new, we could assign them to a group with a low probability of being selected for the
+        # intervention, i.e., the code below. This probability could be increased over time.
+        create_prescription(
+            session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
+        )
     )
 
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
