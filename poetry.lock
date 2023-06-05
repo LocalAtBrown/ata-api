@@ -40,6 +40,28 @@ psycopg2 = "2.9.5"
 sqlmodel = "0.0.8"
 
 [[package]]
+name = "aws-lambda-powertools"
+version = "2.16.1"
+description = "Powertools for AWS Lambda (Python) is a developer toolkit to implement Serverless best practices and increase developer velocity."
+category = "main"
+optional = false
+python-versions = ">=3.7.4,<4.0.0"
+files = [
+    {file = "aws_lambda_powertools-2.16.1-py3-none-any.whl", hash = "sha256:561def4b9b3018a27ca19823bf5751b5a2fbe5eaeb385f99967858bf2f0ff1f5"},
+    {file = "aws_lambda_powertools-2.16.1.tar.gz", hash = "sha256:c0038296ff0151a7be69a6c3292ea1b60650d3565562794e7571db91dcc23950"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6.2,<5.0.0"
+
+[package.extras]
+all = ["aws-xray-sdk (>=2.8.0,<3.0.0)", "fastjsonschema (>=2.14.5,<3.0.0)", "pydantic (>=1.8.2,<2.0.0)"]
+aws-sdk = ["boto3 (>=1.20.32,<2.0.0)"]
+parser = ["pydantic (>=1.8.2,<2.0.0)"]
+tracer = ["aws-xray-sdk (>=2.8.0,<3.0.0)"]
+validation = ["fastjsonschema (>=2.14.5,<3.0.0)"]
+
+[[package]]
 name = "boto3"
 version = "1.26.13"
 description = "The AWS SDK for Python"
@@ -438,6 +460,18 @@ files = [
 
 [package.dependencies]
 types-awscrt = "*"
+
+[[package]]
+name = "case-converter"
+version = "1.1.0"
+description = "A string case conversion package."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "case-converter-1.1.0.tar.gz", hash = "sha256:2ed3fc6e3ffa8d601f9a31ffcbc8fbd19eaeb48671a79a8ef16394672824510e"},
+    {file = "case_converter-1.1.0-py3-none-any.whl", hash = "sha256:d0fbc665a4fd410e454630bcf5168dce62e147a98512647ed48b0a6b556986e3"},
+]
 
 [[package]]
 name = "certifi"
@@ -1361,4 +1395,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "3.9.16"
-content-hash = "ec7ce6d8c681b5e75a11367fb15c1802955120300e9a564dc9ac85b08fa9e0ab"
+content-hash = "f628aad855fac5700ae98991607049a0caa30ca030d14e841e387b5179b55390"
