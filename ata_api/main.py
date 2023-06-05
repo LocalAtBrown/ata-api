@@ -13,12 +13,19 @@ from ata_api.crud import create_prescription, get_prescription
 from ata_api.db import create_db_session
 from ata_api.helpers.logging import logging
 from ata_api.models import PrescriptionResponse
-from ata_api.monitoring import CloudWatchMetric, CloudWatchMetricDimension, metrics
+from ata_api.monitoring import (
+    CLOUDWATCH_METRICS_NAMESPACE,
+    CloudWatchMetric,
+    CloudWatchMetricDimension,
+    metrics,
+)
 from ata_api.site import SiteName
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
 
 
 @app.get("/")
@@ -45,8 +52,16 @@ def get_or_create_prescription(
         )
         # Log metric
         if os.environ.get("STAGE") is not None:
-            with single_metric(name=CloudWatchMetric.PRESCRIPTIONS_CREATED, unit=MetricUnit.Count, value=1) as metric:
-                metric.add_dimension(name=CloudWatchMetricDimension.SITE_NAME, value=site_name)
+            try:
+                with single_metric(
+                    name=CloudWatchMetric.PRESCRIPTIONS_CREATED,
+                    unit=MetricUnit.Count,
+                    value=1,
+                    namespace=CLOUDWATCH_METRICS_NAMESPACE,
+                ) as metric:
+                    metric.add_dimension(name=CloudWatchMetricDimension.SITE_NAME, value=site_name)
+            except Exception as e:
+                logger.exception(f"Failed to log metric: {e}")
 
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
