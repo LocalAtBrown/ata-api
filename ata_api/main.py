@@ -44,7 +44,7 @@ def get_or_create_prescription(
             session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
         )
         # Log metric
-        if os.environ.get("STAGE") == "prod":
+        if os.environ.get("STAGE") is not None:
             with single_metric(name=CloudWatchMetric.PRESCRIPTIONS_CREATED, unit=MetricUnit.Count, value=1) as metric:
                 metric.add_dimension(name=CloudWatchMetricDimension.SITE_NAME, value=site_name)
 
