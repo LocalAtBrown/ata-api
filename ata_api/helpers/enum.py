@@ -1,5 +1,5 @@
-from enum import Enum, auto
-from typing import Any
+from enum import Enum
+from typing import Any, cast
 
 from caseconverter import kebabcase, pascalcase
 
@@ -12,6 +12,7 @@ class StrEnum(str, Enum):
     def __str__(self) -> str:
         return f"{self.value}"
 
+
 # There's probably a metaclass way to make these cleaner
 class StrEnumKebab(StrEnum):
     """
@@ -20,7 +21,7 @@ class StrEnumKebab(StrEnum):
 
     @staticmethod
     def _generate_next_value_(name: str, *args: Any, **kwargs: Any) -> str:
-        return kebabcase(name)
+        return cast(str, kebabcase(name))
 
 
 class StrEnumPascal(StrEnum):
@@ -30,4 +31,4 @@ class StrEnumPascal(StrEnum):
 
     @staticmethod
     def _generate_next_value_(name: str, *args: Any, **kwargs: Any) -> str:
-        return pascalcase(name)
+        return cast(str, pascalcase(name))
