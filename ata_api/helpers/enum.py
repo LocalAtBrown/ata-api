@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, cast
 
-from caseconverter import kebabcase, pascalcase
+from caseconverter import kebabcase, pascalcase, snakecase
 
 
 class StrEnum(str, Enum):
@@ -32,3 +32,13 @@ class StrEnumPascal(StrEnum):
     @staticmethod
     def _generate_next_value_(name: str, *args: Any, **kwargs: Any) -> str:
         return cast(str, pascalcase(name))
+
+
+class StrEnumSnake(StrEnum):
+    """
+    StrEnum class where the value is snake_case.
+    """
+
+    @staticmethod
+    def _generate_next_value_(name: str, *args: Any, **kwargs: Any) -> str:
+        return cast(str, snakecase(name))
