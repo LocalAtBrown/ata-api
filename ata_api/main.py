@@ -13,12 +13,7 @@ from ata_api.crud import create_prescription, get_prescription
 from ata_api.db import create_db_session
 from ata_api.helpers.logging import logging
 from ata_api.models import PrescriptionResponse
-from ata_api.monitoring import (
-    CLOUDWATCH_METRICS_NAMESPACE,
-    CloudWatchMetric,
-    CloudWatchMetricDimension,
-    metrics,
-)
+from ata_api.monitoring import CloudWatchMetric, CloudWatchMetricDimension, metrics
 from ata_api.site import SiteName
 
 logger = logging.getLogger(__name__)
@@ -57,9 +52,8 @@ def get_or_create_prescription(
                     name=CloudWatchMetric.PRESCRIPTIONS_CREATED,
                     unit=MetricUnit.Count,
                     value=1,
-                    namespace=CLOUDWATCH_METRICS_NAMESPACE,
+                    default_dimensions=metrics.default_dimensions,
                 ) as metric:
-                    metric.add_dimension(name=CloudWatchMetricDimension.STAGE, value=os.environ["STAGE"])
                     metric.add_dimension(name=CloudWatchMetricDimension.SITE_NAME, value=site_name)
             except Exception as e:
                 logger.exception(f"Failed to log metric: {e}")
