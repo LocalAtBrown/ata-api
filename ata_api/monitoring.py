@@ -1,4 +1,4 @@
-import os
+# import os
 from enum import auto
 
 from aws_lambda_powertools import Metrics
@@ -20,4 +20,4 @@ class CloudWatchMetricDimension(StrEnumSnake):
 
 
 metrics = Metrics(namespace=CLOUDWATCH_METRICS_NAMESPACE)
-metrics.set_default_dimensions(**{CloudWatchMetricDimension.STAGE: os.environ.get("STAGE")})  # type: ignore
+# metrics.set_default_dimensions(**{CloudWatchMetricDimension.STAGE: os.environ.get("STAGE")})  # type: ignore
