@@ -7,8 +7,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from ata_api.db import engine, session_factory
-from ata_api.helpers.enums import SiteName
 from ata_api.main import app
+from ata_api.site import SiteName
 
 client = TestClient(app)
 
