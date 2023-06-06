@@ -1,5 +1,6 @@
 import functools
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -23,7 +24,10 @@ def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable
             try:
                 return func(*args, **kwargs)
             except Exception as exception_internal:
-                logger.exception(f"{args}, {kwargs}: {exception_internal}")
+                logger.exception(
+                    f"An exception occurred in while calling function {func.__name__} "
+                    + f"with args {args} and kwargs {kwargs}: {exception_internal}"
+                )
                 raise exception
 
         return wrapper
