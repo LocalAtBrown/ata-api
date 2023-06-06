@@ -39,7 +39,7 @@ def get_usergroup_group(usergroup: UserGroup) -> Group:
         detail="An exception occurred while fetching the prescription.",
     )
 )
-def get_prescription(session: Session, site_name: SiteName, user_id: UUID) -> Optional[UserGroup]:
+def read_prescription(session: Session, site_name: SiteName, user_id: UUID) -> Optional[UserGroup]:
     """
     Returns the prescription for the given user_id and site_name, or None if it doesn't exist.
     The read metric is logged only if the prescription exists.

@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, Path, Query
 from mangum import Mangum
 from sqlalchemy.orm import Session
 
-from ata_api.crud import create_prescription, get_prescription
+from ata_api.crud import create_prescription, read_prescription
 from ata_api.db import create_db_session
 from ata_api.helpers.logging import logging
 from ata_api.models import PrescriptionResponse
@@ -28,7 +28,7 @@ def get_root() -> object:
 
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
-def get_or_create_prescription(
+def get_prescription(
     site_name: Annotated[SiteName, Path(title="Site name")],
     user_id: Annotated[UUID, Path(title="Snowplow user ID")],
     wa: Annotated[int, Query(title="Weight of assignment to A", ge=0)] = 1,
@@ -37,7 +37,7 @@ def get_or_create_prescription(
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
     # Get group assignment. If it doesn't exist, create it.
-    usergroup = get_prescription(session, site_name, user_id) or create_prescription(
+    usergroup = read_prescription(session, site_name, user_id) or create_prescription(
         session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
     )
 
