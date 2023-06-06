@@ -59,7 +59,7 @@ def get_or_create_prescription(
                     value=1,
                     namespace=CLOUDWATCH_METRICS_NAMESPACE,
                 ) as metric:
-                    metric.add_dimension(name=CloudWatchMetricDimension.STAGE, value=os.environ["STAGE"])  # type: ignore
+                    metric.add_dimension(name=CloudWatchMetricDimension.STAGE, value=os.environ["STAGE"])
                     metric.add_dimension(name=CloudWatchMetricDimension.SITE_NAME, value=site_name)
             except Exception as e:
                 logger.exception(f"Failed to log metric: {e}")
