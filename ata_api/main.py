@@ -4,9 +4,11 @@ from typing import Annotated
 from uuid import UUID
 
 from ata_db_models.models import Group
-from fastapi import Depends, FastAPI, Path, Query
+from fastapi import Depends, FastAPI, Path, Query, Request, status
+from fastapi.responses import JSONResponse
 from mangum import Mangum
 from sqlalchemy.orm import Session
+from starlette.exceptions import ExceptionMiddleware
 
 from ata_api.crud import create_prescription, read_prescription
 from ata_api.db import create_db_session
@@ -17,7 +19,17 @@ from ata_api.router import LoggerRouteHandler
 from ata_api.site import SiteName
 
 app = FastAPI()
+# Add FastAPI context to logs
 app.router.route_class = LoggerRouteHandler
+# Add exception middleware to log unhandled exceptions
+app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exception: Exception) -> JSONResponse:
+    logger.exception("Unhandled exception")
+    return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": "Internal Server Error"})
+
 
 logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
 
@@ -36,6 +48,7 @@ def get_prescription(
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
+    raise ValueError("test")
     # Get group assignment. If it doesn't exist, create it.
     logger.info(f"Reading prescription for user {user_id} at site {site_name}")
     usergroup = read_prescription(session, site_name, user_id)
