@@ -59,7 +59,7 @@ module = ["ata_db_models.helpers", "ata_db_models.models", "caseconverter", "hel
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "ata_api.helpers.logging"
+module = ["ata_api.main"]
 implicit_reexport = true
 
 [tool.pytest.ini_options]
