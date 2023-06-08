@@ -17,7 +17,6 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-# ---------- METRICS ----------
 class CloudWatchMetric(StrEnumPascal):
     PRESCRIPTIONS_CREATED = auto()
     PRESCRIPTIONS_READ = auto()

@@ -12,7 +12,7 @@ from ata_api.crud import create_prescription, read_prescription
 from ata_api.db import create_db_session
 from ata_api.helpers.logging import logging
 from ata_api.models import PrescriptionResponse
-from ata_api.monitoring import metrics
+from ata_api.monitoring.metrics import metrics
 from ata_api.site import SiteName
 
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlmodel import select
 
 from ata_api.helpers.functools import raise_exception
-from ata_api.monitoring import (
+from ata_api.monitoring.metrics import (
     CloudWatchMetric,
     CloudWatchMetricDimension,
     log_cloudwatch_metric,
