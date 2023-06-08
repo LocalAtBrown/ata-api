@@ -4,9 +4,7 @@ from typing import TypeVar
 
 from typing_extensions import ParamSpec
 
-from ata_api.helpers.logging import logging
-
-logger = logging.getLogger(__name__)
+from ata_api.monitoring.logging import logger
 
 P = ParamSpec("P")
 R = TypeVar("R")
