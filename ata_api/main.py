@@ -13,9 +13,11 @@ from ata_api.db import create_db_session
 from ata_api.models import PrescriptionResponse
 from ata_api.monitoring.logging import logger
 from ata_api.monitoring.metrics import metrics
+from ata_api.router import LoggerRouteHandler
 from ata_api.site import SiteName
 
 app = FastAPI()
+app.router.route_class = LoggerRouteHandler
 
 logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
 
