@@ -33,7 +33,6 @@ def get_prescription(
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
-    raise ValueError("test")
     # Get group assignment. If it doesn't exist, create it.
     logger.info(f"Reading prescription for user {user_id} at site {site_name}")
     usergroup = read_prescription(session, site_name, user_id)

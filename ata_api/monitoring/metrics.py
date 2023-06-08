@@ -66,8 +66,8 @@ def log_cloudwatch_metric(
                         # If the dimension value is a function, it needs to be called with the output of the func.
                         else:
                             metric.add_dimension(name=dimension_name, value=dimension_value(output))
-            except Exception as e:
-                logger.exception(f"Failed to log metric: {e}")
+            except Exception:
+                logger.exception("Failed to log metric")
             finally:
                 return output
 

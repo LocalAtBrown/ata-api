@@ -22,10 +22,10 @@ def raise_exception(exception: Exception, logger: Logger) -> Callable[[Callable[
                 return func(*args, **kwargs)
             except Exception as exception_internal:
                 logger.exception(
-                    f"An exception occurred in while calling function {func.__name__} "
-                    + f"with args {args} and kwargs {kwargs}: {exception_internal}"
+                    f"Exception occurred in while calling function {func.__name__} "
+                    + f"with args {args} and kwargs {kwargs}"
                 )
-                raise exception
+                raise exception from exception_internal
 
         return wrapper
 
