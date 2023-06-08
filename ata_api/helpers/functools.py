@@ -2,15 +2,14 @@ import functools
 from collections.abc import Callable
 from typing import TypeVar
 
+from aws_lambda_powertools import Logger
 from typing_extensions import ParamSpec
-
-from ata_api.monitoring.logging import logger
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable[P, R]]:
+def raise_exception(exception: Exception, logger: Logger) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Accepts an Exception as an argument and wraps around a function.
     When the function short-circuits, the exception is raised.

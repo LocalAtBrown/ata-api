@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlmodel import select
 
 from ata_api.helpers.functools import raise_exception
+from ata_api.monitoring.logging import logger
 from ata_api.monitoring.metrics import (
     CloudWatchMetric,
     CloudWatchMetricDimension,
@@ -34,10 +35,11 @@ def get_usergroup_group(usergroup: UserGroup) -> Group:
     },
 )
 @raise_exception(
-    HTTPException(
+    exception=HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="An exception occurred while fetching the prescription.",
-    )
+    ),
+    logger=logger,
 )
 def read_prescription(session: Session, site_name: SiteName, user_id: UUID) -> Optional[UserGroup]:
     """
@@ -60,10 +62,11 @@ def read_prescription(session: Session, site_name: SiteName, user_id: UUID) -> O
     },
 )
 @raise_exception(
-    HTTPException(
+    exception=HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="An exception occurred while creating the prescription.",
-    )
+    ),
+    logger=logger,
 )
 def create_prescription(session: Session, site_name: SiteName, user_id: UUID, group: Group) -> UserGroup:
     """

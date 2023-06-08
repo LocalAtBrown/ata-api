@@ -11,8 +11,6 @@ from typing_extensions import ParamSpec
 from ata_api.helpers.enum import StrEnumPascal, StrEnumSnake
 from ata_api.monitoring.logging import logger
 
-
-
 P = ParamSpec("P")
 R = TypeVar("R")
 

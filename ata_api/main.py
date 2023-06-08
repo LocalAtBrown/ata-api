@@ -44,5 +44,7 @@ def get_prescription(
 
 handler = Mangum(app)
 
+# Add logging
+handler = logger.inject_lambda_context(handler, clear_state=True)
 # Add metrics last to properly flush metrics
 handler = metrics.log_metrics(handler, capture_cold_start_metric=True)
