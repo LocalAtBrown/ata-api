@@ -35,9 +35,14 @@ def get_prescription(
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
     # Get group assignment. If it doesn't exist, create it.
-    usergroup = read_prescription(session, site_name, user_id) or create_prescription(
-        session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
-    )
+    logger.info(f"Reading prescription for user {user_id} at site {site_name}")
+    usergroup = read_prescription(session, site_name, user_id)
+
+    if usergroup is None:
+        logger.info(f"Prescription not found. Creating prescription for user {user_id} at site {site_name}")
+        usergroup = create_prescription(
+            session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
+        )
 
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
