@@ -1,4 +1,8 @@
+import json
+import os
+
 from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import ExceptionMiddleware
 
@@ -8,6 +12,8 @@ from ata_api.routing import LoggerRouteHandler
 app = FastAPI()
 # Add FastAPI context to logs
 app.router.route_class = LoggerRouteHandler
+# Add CORS whitelist
+app.add_middleware(CORSMiddleware, allow_origins=json.loads(os.environ["CORS_ALLOWED_ORIGINS"]), allow_methods=["GET"])
 # Add exception middleware to log unhandled exceptions
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
