@@ -1,10 +1,11 @@
 import os
 import random
-from typing import Annotated
+from typing import Annotated, Union
 from uuid import UUID
+from pydantic import HttpUrl, stricturl
 
 from ata_db_models.models import Group
-from fastapi import Depends, Path, Query
+from fastapi import Depends, Path, Query, Header, Response
 from mangum import Mangum
 from sqlalchemy.orm import Session
 
@@ -20,7 +21,14 @@ logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
 
 
 @app.get("/")
-def get_root() -> object:
+def get_root(
+    response: Response,
+    origin: Annotated[Union[HttpUrl, None], Header(title="Origin of request")] = None,
+) -> object:
+    # Allows origin once it passes the preflight
+    if origin is not None:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        
     return {"message": "This is the root endpoint for the AtA API."}
 
 
@@ -42,6 +50,10 @@ def get_prescription(
         usergroup = create_prescription(
             session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
         )
+
+    # Allows origin once it passes the preflight
+    if origin is not None:
+        response.headers["Access-Control-Allow-Origin"] = origin
 
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
