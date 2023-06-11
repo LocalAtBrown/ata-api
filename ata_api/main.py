@@ -2,11 +2,11 @@ import os
 import random
 from typing import Annotated, Union
 from uuid import UUID
-from pydantic import HttpUrl, stricturl
 
 from ata_db_models.models import Group
-from fastapi import Depends, Path, Query, Header, Response
+from fastapi import Depends, Header, Path, Query, Response
 from mangum import Mangum
+from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
 from ata_api.app import app
@@ -28,17 +28,19 @@ def get_root(
     # Allows origin once it passes the preflight
     if origin is not None:
         response.headers["Access-Control-Allow-Origin"] = origin
-        
+
     return {"message": "This is the root endpoint for the AtA API."}
 
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
 def get_prescription(
+    response: Response,
     site_name: Annotated[SiteName, Path(title="Site name")],
     user_id: Annotated[UUID, Path(title="Snowplow user ID")],
     wa: Annotated[int, Query(title="Weight of assignment to A", ge=0)] = 1,
     wb: Annotated[int, Query(title="Weight of assignment to B", ge=0)] = 1,
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
+    origin: Annotated[Union[HttpUrl, None], Header(title="Origin of request")] = None,
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
     # Get group assignment. If it doesn't exist, create it.
