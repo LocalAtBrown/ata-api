@@ -2,17 +2,14 @@ import functools
 from collections.abc import Callable
 from typing import TypeVar
 
+from aws_lambda_powertools import Logger
 from typing_extensions import ParamSpec
-
-from ata_api.helpers.logging import logging
-
-logger = logging.getLogger(__name__)
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable[P, R]]:
+def raise_exception(exception: Exception, logger: Logger) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """
     Accepts an Exception as an argument and wraps around a function.
     When the function short-circuits, the exception is raised.
@@ -25,10 +22,10 @@ def raise_exception(exception: Exception) -> Callable[[Callable[P, R]], Callable
                 return func(*args, **kwargs)
             except Exception as exception_internal:
                 logger.exception(
-                    f"An exception occurred in while calling function {func.__name__} "
-                    + f"with args {args} and kwargs {kwargs}: {exception_internal}"
+                    f"Exception occurred in while calling function {func.__name__} "
+                    + f"with args {args} and kwargs {kwargs}"
                 )
-                raise exception
+                raise exception from exception_internal
 
         return wrapper
 

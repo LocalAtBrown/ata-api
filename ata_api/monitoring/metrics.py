@@ -9,15 +9,12 @@ from aws_lambda_powertools.metrics import MetricUnit
 from typing_extensions import ParamSpec
 
 from ata_api.helpers.enum import StrEnumPascal, StrEnumSnake
-from ata_api.helpers.logging import logging
-
-logger = logging.getLogger(__name__)
+from ata_api.monitoring.logging import logger
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-# ---------- METRICS ----------
 class CloudWatchMetric(StrEnumPascal):
     PRESCRIPTIONS_CREATED = auto()
     PRESCRIPTIONS_READ = auto()
@@ -69,8 +66,8 @@ def log_cloudwatch_metric(
                         # If the dimension value is a function, it needs to be called with the output of the func.
                         else:
                             metric.add_dimension(name=dimension_name, value=dimension_value(output))
-            except Exception as e:
-                logger.exception(f"Failed to log metric: {e}")
+            except Exception:
+                logger.exception("Failed to log metric")
             finally:
                 return output
 
