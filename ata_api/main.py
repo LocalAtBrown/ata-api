@@ -1,11 +1,12 @@
 import os
 import random
-from typing import Annotated
+from typing import Annotated, Union
 from uuid import UUID
 
 from ata_db_models.models import Group
-from fastapi import Depends, Path, Query
+from fastapi import Depends, Header, Path, Query, Response
 from mangum import Mangum
+from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
 from ata_api.app import app
@@ -20,17 +21,26 @@ logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
 
 
 @app.get("/")
-def get_root() -> object:
+def get_root(
+    response: Response,
+    origin: Annotated[Union[HttpUrl, None], Header(title="Origin of request")] = None,
+) -> object:
+    # Allows origin once it passes the preflight
+    if origin is not None:
+        response.headers["Access-Control-Allow-Origin"] = origin
+
     return {"message": "This is the root endpoint for the AtA API."}
 
 
 @app.get("/prescription/{site_name}/{user_id}", response_model=PrescriptionResponse)
 def get_prescription(
+    response: Response,
     site_name: Annotated[SiteName, Path(title="Site name")],
     user_id: Annotated[UUID, Path(title="Snowplow user ID")],
     wa: Annotated[int, Query(title="Weight of assignment to A", ge=0)] = 1,
     wb: Annotated[int, Query(title="Weight of assignment to B", ge=0)] = 1,
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
+    origin: Annotated[Union[HttpUrl, None], Header(title="Origin of request")] = None,
     session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
     # Get group assignment. If it doesn't exist, create it.
@@ -42,6 +52,10 @@ def get_prescription(
         usergroup = create_prescription(
             session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
         )
+
+    # Allows origin once it passes the preflight
+    if origin is not None:
+        response.headers["Access-Control-Allow-Origin"] = origin
 
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
