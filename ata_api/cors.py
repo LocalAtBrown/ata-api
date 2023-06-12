@@ -42,6 +42,7 @@ def allow_cors(func: Callable[P, Union[BaseModel, Response]]) -> Callable[P, Uni
         cors_headers = {
             # Allows origin once it passes the middleware validation
             "Access-Control-Allow-Origin": str(origin),
+            "Vary": "Origin",
         }
 
         # If output is a BaseModel, return a JSONResponse with CORS headers
