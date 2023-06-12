@@ -55,6 +55,10 @@ def get_prescription(
             session, site_name, user_id, group=random.choices([Group.A, Group.B, Group.C], weights=[wa, wb, wc], k=1)[0]
         )
 
+    # Allows origin once it passes the preflight
+    if origin is not None:
+        response.headers["Access-Control-Allow-Origin"] = origin
+
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
 
