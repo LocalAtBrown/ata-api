@@ -43,13 +43,29 @@ def create_and_drop_tables() -> Generator[None, None, None]:
     SQLModel.metadata.drop_all(engine)
 
 
+def _test_cors_origin_allowed(endpoint: str, origin_allowed: HttpUrl) -> None:
+    with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={origin_allowed})}):
+        response = client.get(endpoint, headers={"Origin": origin_allowed})
+        assert response.status_code == status.HTTP_200_OK
+        assert response.headers["access-control-allow-origin"] == origin_allowed
+        assert "Origin" in response.headers["vary"]
+
+
+def _test_cors_origin_denied(endpoint: str, origin_allowed: HttpUrl, origin_denied: HttpUrl) -> None:
+    with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={origin_allowed})}):
+        response = client.get(endpoint, headers={"Origin": origin_denied})
+        assert response.status_code == status.HTTP_200_OK
+        assert "access-control-allow-origin" not in response.headers
+        assert "vary" not in response.headers or "Origin" not in response.headers["vary"]
+
+
 @pytest.fixture(scope="module")
-def allowed_origin() -> HttpUrl:
+def origin_allowed() -> HttpUrl:
     return "https://allowed.com"  # type: ignore
 
 
 @pytest.fixture(scope="module")
-def denied_origin() -> HttpUrl:
+def origin_denied() -> HttpUrl:
     return "https://denied.com"  # type: ignore
 
 
@@ -65,20 +81,12 @@ class TestRoot:
         assert response.json() == {"message": "This is the root endpoint for the AtA API."}
 
     @pytest.mark.unit
-    def test_cors_allowed_origin(self, endpoint: str, allowed_origin: HttpUrl) -> None:
-        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
-            response = client.get(endpoint, headers={"Origin": allowed_origin})
-            assert response.status_code == status.HTTP_200_OK
-            assert response.headers["access-control-allow-origin"] == allowed_origin
-            assert "Origin" in response.headers["vary"]
+    def test_cors_origin_allowed(self, endpoint: str, origin_allowed: HttpUrl) -> None:
+        _test_cors_origin_allowed(endpoint, origin_allowed)
 
     @pytest.mark.unit
-    def test_cors_denied_origin(self, endpoint: str, allowed_origin: HttpUrl, denied_origin: HttpUrl) -> None:
-        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
-            response = client.get(endpoint, headers={"Origin": denied_origin})
-            assert response.status_code == status.HTTP_200_OK
-            assert "access-control-allow-origin" not in response.headers
-            assert "vary" not in response.headers or "Origin" not in response.headers["vary"]
+    def test_cors_origin_denied(self, endpoint: str, origin_allowed: HttpUrl, origin_denied: HttpUrl) -> None:
+        _test_cors_origin_denied(endpoint, origin_allowed, origin_denied)
 
 
 class TestPrescription:
@@ -154,25 +162,17 @@ class TestPrescription:
         assert data["group"] in {*Group}  # A, B or C
 
     @pytest.mark.integration
-    def test_cors_allowed_origin(
-        self, endpoint: str, allowed_origin: HttpUrl, create_and_drop_tables: Generator[None, None, None]
+    def test_cors_origin_allowed(
+        self, endpoint: str, origin_allowed: HttpUrl, create_and_drop_tables: Generator[None, None, None]
     ) -> None:
-        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
-            response = client.get(endpoint, headers={"Origin": allowed_origin})
-            assert response.status_code == status.HTTP_200_OK
-            assert response.headers["access-control-allow-origin"] == allowed_origin
-            assert "Origin" in response.headers["vary"]
+        _test_cors_origin_allowed(endpoint, origin_allowed)
 
     @pytest.mark.integration
-    def test_cors_denied_origin(
+    def test_cors_origin_denied(
         self,
         endpoint: str,
-        allowed_origin: HttpUrl,
-        denied_origin: HttpUrl,
+        origin_allowed: HttpUrl,
+        origin_denied: HttpUrl,
         create_and_drop_tables: Generator[None, None, None],
     ) -> None:
-        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
-            response = client.get(endpoint, headers={"Origin": denied_origin})
-            assert response.status_code == status.HTTP_200_OK
-            assert "access-control-allow-origin" not in response.headers
-            assert "vary" not in response.headers or "Origin" not in response.headers["vary"]
+        _test_cors_origin_denied(endpoint, origin_allowed, origin_denied)
