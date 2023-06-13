@@ -38,13 +38,13 @@ def get_root(
 def get_prescription(
     response: Response,
     settings: AnnotatedSettings,
+    session: Annotated[Session, Depends(create_db_session)],
     site_name: Annotated[SiteName, Path(title="Site name")],
     user_id: Annotated[UUID, Path(title="Snowplow user ID")],
     wa: Annotated[int, Query(title="Weight of assignment to A", ge=0)] = 1,
     wb: Annotated[int, Query(title="Weight of assignment to B", ge=0)] = 1,
     wc: Annotated[int, Query(title="Weight of assignment to C", ge=0)] = 1,
     origin: AnnotatedOrigin = None,
-    session: Session = Depends(create_db_session),
 ) -> PrescriptionResponse:
     # Get group assignment. If it doesn't exist, create it.
     logger.info(f"Reading prescription for user {user_id} at site {site_name}")
