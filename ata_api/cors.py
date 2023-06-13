@@ -2,6 +2,7 @@ import functools
 from typing import Callable, Union
 
 from fastapi import Response
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing_extensions import ParamSpec
@@ -34,7 +35,7 @@ def allow_cors(func: Callable[P, Union[BaseModel, Response]]) -> Callable[P, Uni
                     "Access-Control-Allow-Origin": str(origin),
                     "Vary": "Origin",
                 },
-                content=output.dict(),
+                content=jsonable_encoder(output),
             )
         # If output is a Response, update its headers with CORS headers
         elif isinstance(output, Response):
