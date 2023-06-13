@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Generator, Tuple, Any
+from typing import Any, Generator, Tuple
 from uuid import UUID
 
 import pytest
@@ -18,13 +18,12 @@ client = TestClient(app)
 
 
 @contextmanager
-def override_dependencies(key_value_pairs: list[tuple[Callable[..., Any], Callable[..., Any]]]) -> Generator[None, None, None]:
+def override_dependencies(override_dict: dict[Callable[..., Any], Callable[..., Any]]) -> Generator[None, None, None]:
     """
     Fixture responsible for overriding dependencies for the duration of a test.
     """
     try:
-        for key, value in key_value_pairs:
-            app.dependency_overrides[key] = value
+        app.dependency_overrides.update(override_dict)
         yield
     finally:
         app.dependency_overrides = {}
@@ -46,12 +45,12 @@ def create_and_drop_tables() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="module")
 def allowed_origin() -> HttpUrl:
-    return "https://allowed.com"    # type: ignore
+    return "https://allowed.com"  # type: ignore
 
 
 @pytest.fixture(scope="module")
 def denied_origin() -> HttpUrl:
-    return "https://denied.com"   # type: ignore
+    return "https://denied.com"  # type: ignore
 
 
 class TestRoot:
@@ -67,7 +66,7 @@ class TestRoot:
 
     @pytest.mark.unit
     def test_cors_allowed_origin(self, endpoint: str, allowed_origin: HttpUrl) -> None:
-        with override_dependencies([(get_settings, lambda: Settings(cors_allowed_origins={allowed_origin}))]):
+        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
             response = client.get(endpoint, headers={"Origin": allowed_origin})
             assert response.status_code == status.HTTP_200_OK
             assert response.headers["access-control-allow-origin"] == allowed_origin
@@ -75,7 +74,7 @@ class TestRoot:
 
     @pytest.mark.unit
     def test_cors_denied_origin(self, endpoint: str, allowed_origin: HttpUrl, denied_origin: HttpUrl) -> None:
-        with override_dependencies([(get_settings, lambda: Settings(cors_allowed_origins={allowed_origin}))]):
+        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
             response = client.get(endpoint, headers={"Origin": denied_origin})
             assert response.status_code == status.HTTP_200_OK
             assert "access-control-allow-origin" not in response.headers
@@ -158,7 +157,7 @@ class TestPrescription:
     def test_cors_allowed_origin(
         self, endpoint: str, allowed_origin: HttpUrl, create_and_drop_tables: Generator[None, None, None]
     ) -> None:
-        with override_dependencies([(get_settings, lambda: Settings(cors_allowed_origins={allowed_origin}))]):
+        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
             response = client.get(endpoint, headers={"Origin": allowed_origin})
             assert response.status_code == status.HTTP_200_OK
             assert response.headers["access-control-allow-origin"] == allowed_origin
@@ -172,7 +171,7 @@ class TestPrescription:
         denied_origin: HttpUrl,
         create_and_drop_tables: Generator[None, None, None],
     ) -> None:
-        with override_dependencies([(get_settings, lambda: Settings(cors_allowed_origins={allowed_origin}))]):
+        with override_dependencies({get_settings: lambda: Settings(cors_allowed_origins={allowed_origin})}):
             response = client.get(endpoint, headers={"Origin": denied_origin})
             assert response.status_code == status.HTTP_200_OK
             assert "access-control-allow-origin" not in response.headers
