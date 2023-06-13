@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import ExceptionMiddleware
 
-from ata_api.cors import get_cors_allowed_origins
 from ata_api.monitoring.logging import logger
 from ata_api.routing import LoggerRouteHandler
 from ata_api.settings import settings

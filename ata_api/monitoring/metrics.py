@@ -1,5 +1,4 @@
 import functools
-import os
 from collections.abc import Callable
 from enum import auto
 from typing import TypeVar, Union
