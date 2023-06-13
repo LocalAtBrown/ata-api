@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing_extensions import ParamSpec
 
 from ata_api.monitoring.logging import logger
+from ata_api.settings import settings
 
 
 def get_cors_allowed_origins() -> list[str]:
@@ -28,6 +29,7 @@ P = ParamSpec("P")
 def allow_cors(func: Callable[P, Union[BaseModel, Response]]) -> Callable[P, Union[BaseModel, Response]]:
     """
     Wraps a FastAPI path function to allow CORS requests.
+    Works with or without the FastAPI CORS middleware.
     """
 
     @functools.wraps(func)
@@ -36,24 +38,23 @@ def allow_cors(func: Callable[P, Union[BaseModel, Response]]) -> Callable[P, Uni
 
         origin = kwargs.get("origin")
 
-        if origin is None:
+        # Still check if origin is allowed in case preflight request is not sent
+        if origin is None or origin not in settings.cors_allowed_origins:
             return output
-
-        cors_headers = {
-            # Allows origin once it passes the middleware validation
-            "Access-Control-Allow-Origin": str(origin),
-            "Vary": "Origin",
-        }
 
         # If output is a BaseModel, return a JSONResponse with CORS headers
         if isinstance(output, BaseModel):
             return JSONResponse(
-                headers=cors_headers,
+                headers={
+                    "Access-Control-Allow-Origin": str(origin),
+                    "Vary": "Origin",
+                },
                 content=output.dict(),
             )
         # If output is a Response, update its headers with CORS headers
         elif isinstance(output, Response):
-            output.headers.update(cors_headers)
+            output.headers["Access-Control-Allow-Origin"] = str(origin)
+            output.headers.add_vary_header("Origin")
             return output
 
     return wrapper
