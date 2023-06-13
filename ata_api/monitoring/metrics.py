@@ -10,6 +10,7 @@ from typing_extensions import ParamSpec
 
 from ata_api.helpers.enum import StrEnumPascal, StrEnumSnake
 from ata_api.monitoring.logging import logger
+from ata_api.settings import settings
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -29,8 +30,8 @@ class CloudWatchMetricDimension(StrEnumSnake):
 # Namespace is defined as an env var in the ata-infrastucture repo
 metrics = Metrics()
 
-if os.environ.get("STAGE") is not None:
-    metrics.set_default_dimensions(**{CloudWatchMetricDimension.STAGE: os.environ["STAGE"]})  # type: ignore
+if settings.stage is not None:
+    metrics.set_default_dimensions(**{CloudWatchMetricDimension.STAGE: settings.stage})  # type: ignore
 
 
 def log_cloudwatch_metric(

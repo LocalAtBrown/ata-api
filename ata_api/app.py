@@ -6,12 +6,13 @@ from starlette.exceptions import ExceptionMiddleware
 from ata_api.cors import get_cors_allowed_origins
 from ata_api.monitoring.logging import logger
 from ata_api.routing import LoggerRouteHandler
+from ata_api.settings import settings
 
 app = FastAPI()
 # Add FastAPI context to logs
 app.router.route_class = LoggerRouteHandler
 # Add CORS whitelist
-app.add_middleware(CORSMiddleware, allow_origins=get_cors_allowed_origins(), allow_methods=["GET"])
+app.add_middleware(CORSMiddleware, allow_origins=[*settings.cors_allowed_origins], allow_methods=["GET"])
 # Add exception middleware to log unhandled exceptions
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 

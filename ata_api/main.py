@@ -1,4 +1,3 @@
-import os
 import random
 from typing import Annotated, Union
 from uuid import UUID
@@ -17,9 +16,10 @@ from ata_api.db import create_db_session
 from ata_api.models import PrescriptionResponse
 from ata_api.monitoring.logging import logger
 from ata_api.monitoring.metrics import metrics
+from ata_api.settings import settings
 from ata_api.site import SiteName
 
-logger.info(f"AtA API starting up on stage {os.environ.get('STAGE')}")
+logger.info(f"AtA API starting up on stage {settings.stage}")
 
 Origin = Annotated[Union[HttpUrl, None], Header(title="Origin of request")]
 
