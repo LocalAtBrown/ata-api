@@ -774,6 +774,17 @@ files = [
 ]
 
 [[package]]
+name = "lambda-warmer-py"
+version = "0.6.0"
+description = "keep lambdas warm and monitor cold starts with a simple decorator"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "lambda_warmer_py-0.6.0-py3-none-any.whl", hash = "sha256:881ca23f2678abf22a56edd8328d7b2a0423f5e391052fdf931067cd1430512b"},
+]
+
+[[package]]
 name = "mangum"
 version = "0.17.0"
 description = "AWS Lambda support for ASGI applications"
@@ -1400,4 +1411,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "3.9.16"
-content-hash = "2cc9d8cf1170c8f25f5a24bf1c960ba93d505e2aca1e15b84f92c4204d03f5c7"
+content-hash = "ffff641d46d4293a4bc04b3a32d6c38b4885a1e225a4d648787c817e5fd8b5b6"

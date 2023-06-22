@@ -1,10 +1,12 @@
 import random
-from typing import Annotated, Union
+from typing import Annotated, Any, Union
 from uuid import UUID
 
+import lambdawarmer
 from ata_db_models.models import Group
 from fastapi import Depends, Header, Path, Query, Response
 from mangum import Mangum
+from mangum.types import LambdaContext
 from pydantic import HttpUrl
 from sqlalchemy.orm import Session
 
@@ -62,9 +64,9 @@ def get_prescription(
     return PrescriptionResponse(site_name=usergroup.site_name, user_id=usergroup.user_id, group=usergroup.group)
 
 
-handler = Mangum(app)
-
-# Add logging
-handler = logger.inject_lambda_context(handler, clear_state=True)
-# Add metrics last to properly flush metrics
-handler = metrics.log_metrics(handler, capture_cold_start_metric=True)
+@lambdawarmer.warmer  # type: ignore  # Keep the lambda warm (in addition, need to set up CloudWatch event to ping every 5 minutes)
+@logger.inject_lambda_context(clear_state=True)  # Inject Lambda context for logging
+@metrics.log_metrics(capture_cold_start_metric=True)  # type: ignore  # Log metrics
+def handler(event: dict[str, Any], context: LambdaContext) -> dict[str, Any]:
+    asgi_handler = Mangum(app)
+    return asgi_handler(event, context)

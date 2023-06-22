@@ -18,6 +18,7 @@ case-converter = "^1.1.0"
 starlette = "0.27"
 boto3 = "1.26.13"
 typing-extensions = "^4.6.3"
+lambda-warmer-py = "^0.6.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.0.0"
@@ -58,7 +59,7 @@ exclude = [
 
 [[tool.mypy.overrides]]
 # Remove any of these packages from below list once its type stubs are available
-module = ["ata_db_models.helpers", "ata_db_models.models", "caseconverter", "helpers.enums"]
+module = ["ata_db_models.helpers", "ata_db_models.models", "caseconverter", "helpers.enums", "lambdawarmer"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
